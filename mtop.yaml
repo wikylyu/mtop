@@ -1,0 +1,6 @@
+
+
+tls:
+  listen: ":4433"
+  crt: ./keys/server.crt
+  key: ./keys/server.key
