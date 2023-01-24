@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 )
@@ -81,6 +82,9 @@ func parseMTopAddress(reader *bufio.Reader) (*MTopAddress, error) {
 	return NewMTopAddress(MTopAddressType(t), ip, domain, port), nil
 }
 
+/*
+ * return bytes used for packaging
+ */
 func (address *MTopAddress) Bytes() []byte {
 	buf := bytes.Buffer{}
 	binary.Write(&buf, binary.BigEndian, address.Type)
@@ -92,6 +96,16 @@ func (address *MTopAddress) Bytes() []byte {
 	}
 	binary.Write(&buf, binary.BigEndian, address.Port)
 	return buf.Bytes()
+}
+
+/*
+ * format address like hostname:port
+ */
+func (address *MTopAddress) String() string {
+	if address.Type == MTopAddressTypeDomain {
+		return fmt.Sprintf("%s:%d", address.Domain, address.Port)
+	}
+	return fmt.Sprintf("%s:%d", address.IP.String(), address.Port)
 }
 
 type MTopAuthenticationMessage struct {
