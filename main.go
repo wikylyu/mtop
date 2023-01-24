@@ -12,7 +12,7 @@ import (
 
 	"github.com/sirupsen/logrus/hooks/writer"
 	"github.com/wikylyu/mtop/config"
-	"github.com/wikylyu/mtop/proxy"
+	"github.com/wikylyu/mtop/tunnel"
 )
 
 const (
@@ -64,13 +64,13 @@ func main() {
 
 	cer, err := tls.LoadX509KeyPair(tlsCfg.CRT, tlsCfg.Key)
 	if err != nil {
-		log.Fatalf("load x509 key error: %s", err.Error())
+		log.Fatalf("load x509 key error: %v", err)
 	}
 
 	config := &tls.Config{Certificates: []tls.Certificate{cer}}
 	ln, err := tls.Listen("tcp", tlsCfg.Listen, config)
 	if err != nil {
-		log.Fatalf("listen on %s error: %s", tlsCfg.Listen, err.Error())
+		log.Fatalf("listen on %s error: %v", tlsCfg.Listen, err)
 	}
 	log.Infof("listen on %s", tlsCfg.Listen)
 	defer ln.Close()
@@ -78,10 +78,10 @@ func main() {
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
-			log.Warnf("accept error: %s %T", err.Error(), err)
+			log.Warnf("accept error: %v", err)
 			continue
 		}
-		tunnel := proxy.NewTunnel(conn)
-		go tunnel.Run()
+		t := tunnel.NewTunnel(conn)
+		go t.Run()
 	}
 }
