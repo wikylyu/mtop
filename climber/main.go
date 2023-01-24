@@ -2,6 +2,8 @@ package main
 
 import (
 	"crypto/tls"
+	"crypto/x509"
+	"io/ioutil"
 	"log"
 
 	"github.com/wikylyu/mtop/tunnel/protocol"
@@ -9,9 +11,17 @@ import (
 
 func main() {
 	log.SetFlags(log.Lshortfile)
-
+	certPool := x509.NewCertPool()
+	pem, err := ioutil.ReadFile("../keys/ca.crt")
+	if err != nil {
+		panic(err)
+	}
+	if !certPool.AppendCertsFromPEM(pem) {
+		panic("failed")
+	}
 	conf := &tls.Config{
-		InsecureSkipVerify: true,
+		// InsecureSkipVerify: true,
+		RootCAs: certPool,
 	}
 
 	conn, err := tls.Dial("tcp", "127.0.0.1:4433", conf)

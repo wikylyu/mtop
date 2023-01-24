@@ -11,7 +11,8 @@ MTop follows the principle -- `do one thing and do it well`.
 MTop is just a network proxy for data forwarding. It provides below features:
 
 * User auth with username/password
-* Transport protocol is configurable. By default, it's TLS1.3. And [QUIC](https://en.wikipedia.org/wiki/QUIC) is supported. More transport protocol may be supported in the future, but they must be a security protocol.
+* Transport protocol is configurable. By default, it's TLS1.3. More transport protocol may be supported in the future, but they must be a security protocol, such as [QUIC](https://en.wikipedia.org/wiki/QUIC).
+* Custom CA. Allowed to use self signed certificate.
 * MySQL and PostgreSQL integration for user management, which means you can just insert/update database to manage large scale of users programmatically, without modifying config file.
 
 MTop doesn't and also will not provide below features:
@@ -90,3 +91,16 @@ The initial handshake consists of the following:
         0x1 Version not supported.
         0x2 Auth failure
         0x3 Connection failure.(Connecting to remote failure)
+
+
+## Generate self-signed certificate
+
+Replace example.com to your domain name or use IP:127.0.0.1 for testing.
+    
+```openssl genrsa -out ca.key 2048```
+
+```openssl req -new -x509 -days 365 -key ca.key -subj "/C=CN/ST=GD/L=SZ/O=Acme, Inc./CN=Acme Root CA" -out ca.crt```
+
+```openssl req -newkey rsa:2048 -nodes -keyout server.key -subj "/C=CN/ST=GD/L=SZ/O=Acme, Inc./CN=*.example.com" -out server.csr```
+
+```openssl x509 -req -extfile <(printf "subjectAltName=DNS:example.com,DNS:www.example.com") -days 365 -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt```
