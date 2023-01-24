@@ -173,3 +173,48 @@ func (m *MTopAuthenticationMessage) Bytes() []byte {
 	binary.Write(&buf, binary.BigEndian, m.Address.Bytes())
 	return buf.Bytes()
 }
+
+const (
+	MTopResponseStatusSuccess            = 0x0
+	MTopResponseStatusUnsupportedVersion = 0x1
+	MTopResponseStatusAuthFailure        = 0x2
+	MTopResponseStatusConnectionFailure  = 0x3
+)
+
+type MTopResponseMessage struct {
+	Version byte
+	Status  byte
+}
+
+func NewMTopResponseMessage(ver, status byte) *MTopResponseMessage {
+	return &MTopResponseMessage{
+		Version: ver,
+		Status:  status,
+	}
+}
+
+func ParseMTopResponseMessage(c net.Conn) (*MTopResponseMessage, error) {
+	reader := bufio.NewReader(c)
+	ver, err := reader.ReadByte()
+	if err != nil {
+		return nil, err
+	} else if ver < MTopVersion1 || ver > MTopVersion1 {
+		return nil, ErrInvalidVersion
+	}
+	status, err := reader.ReadByte()
+	if err != nil {
+		return nil, err
+	}
+	if reader.Buffered() > 0 {
+		return nil, ErrInvalidMessage
+	}
+
+	return NewMTopResponseMessage(ver, status), nil
+}
+
+func (m *MTopResponseMessage) Bytes() []byte {
+	buf := bytes.Buffer{}
+	binary.Write(&buf, binary.BigEndian, m.Version)
+	binary.Write(&buf, binary.BigEndian, m.Status)
+	return buf.Bytes()
+}

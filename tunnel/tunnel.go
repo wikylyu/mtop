@@ -48,7 +48,9 @@ func (t *Tunnel) Run() {
 		log.Infof("password: %s", reqMessage.Password)
 		log.Infof("host: %s:%d", reqMessage.Address.Domain, reqMessage.Address.Port)
 
-		if _, err := clientConn.Write(reqMessage.Bytes()); err != nil {
+		respMessage := protocol.NewMTopResponseMessage(protocol.MTopVersion1, protocol.MTopResponseStatusSuccess)
+
+		if _, err := clientConn.Write(respMessage.Bytes()); err != nil {
 			break
 		}
 	}
