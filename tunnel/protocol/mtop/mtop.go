@@ -91,8 +91,10 @@ func (address *MTopAddress) Bytes() []byte {
 	if address.Type == MTopAddressTypeDomain {
 		binary.Write(&buf, binary.BigEndian, byte(len(address.Domain)))
 		binary.Write(&buf, binary.BigEndian, []byte(address.Domain))
+	} else if address.Type == MTopAddressTypeIPv4 {
+		binary.Write(&buf, binary.BigEndian, []byte(address.IP.To4()))
 	} else {
-		binary.Write(&buf, binary.BigEndian, []byte(address.IP))
+		binary.Write(&buf, binary.BigEndian, []byte(address.IP.To16()))
 	}
 	binary.Write(&buf, binary.BigEndian, address.Port)
 	return buf.Bytes()
@@ -126,7 +128,7 @@ func NewMTopAuthenticationMessage(ver, method byte, username, password string, a
 	}
 }
 
-func ParseMTopAuthenticationMessage(c net.Conn) (*MTopAuthenticationMessage, error) {
+func ParseMTopAuthenticationMessage(c io.Reader) (*MTopAuthenticationMessage, error) {
 	reader := bufio.NewReader(c)
 
 	ver, err := reader.ReadByte()
