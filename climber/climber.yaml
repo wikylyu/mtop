@@ -2,9 +2,12 @@
 log:
   level: "debug"
 
+http:
+  listen: :10811
 
 servers:
   - host: "127.0.0.1:4433" # including port
     username: "test"
     password: "123456"
     ca: "../keys/ca.crt" # use custom ca
+    enabled: true

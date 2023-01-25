@@ -34,6 +34,8 @@ func (t *Tunnel) Run() {
 
 	clientConn := t.clientConn
 
+	var remoteAddress string
+
 	if err := t.clientConn.Handshake(func(username, password, address string) bool {
 		if username != "test" || password != "123456" {
 			return false
@@ -44,23 +46,33 @@ func (t *Tunnel) Run() {
 			return false
 		}
 		t.remoteConn = remoteConn
-		log.Debugf("connection established: %s <=> %s", clientConn.RemoteAddr().String(), address)
+		remoteAddress = address
 		return true
 	}); err != nil {
 		return
 	}
+	log.Debugf("connection established: %s -- %s", clientConn.RemoteAddr().String(), remoteAddress)
 
+	ConnForwarding(t.clientConn, t.remoteConn)
+
+	log.Debugf("connection closed: %s -- %s", clientConn.RemoteAddr().String(), remoteAddress)
+}
+
+func ConnForwarding(c1, c2 net.Conn) {
+	defer c1.Close() // it's ok to close connection twice
+	defer c2.Close()
 	go func() {
-		defer t.Close() // it's ok to close tunnel twice
+		defer c1.Close() // it's ok to close connection twice
+		defer c2.Close()
 		buf := make([]byte, 4096)
 		for {
-			t.remoteConn.SetReadDeadline(time.Now().Add(time.Minute * 2)) // 120 seconds for timeout
-			n, err := t.remoteConn.Read(buf)
+			c1.SetReadDeadline(time.Now().Add(time.Minute * 2)) // 120 seconds for timeout
+			n, err := c1.Read(buf)
 			if err != nil || n <= 0 {
 				break
 			}
 
-			if _, err := clientConn.Write(buf[:n]); err != nil {
+			if _, err := c2.Write(buf[:n]); err != nil {
 				break
 			}
 		}
@@ -68,13 +80,13 @@ func (t *Tunnel) Run() {
 
 	buf := make([]byte, 4096)
 	for {
-		clientConn.SetReadDeadline(time.Now().Add(time.Minute * 2)) // 120 seconds for timeout
-		n, err := clientConn.Read(buf)
+		c2.SetReadDeadline(time.Now().Add(time.Minute * 2)) // 120 seconds for timeout
+		n, err := c2.Read(buf)
 		if err != nil || n <= 0 {
 			break
 		}
 
-		if _, err := t.remoteConn.Write(buf[:n]); err != nil {
+		if _, err := c1.Write(buf[:n]); err != nil {
 			break
 		}
 	}
