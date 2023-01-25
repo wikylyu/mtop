@@ -51,14 +51,14 @@ func (t *Tunnel) Run() {
 	}); err != nil {
 		return
 	}
-	log.Debugf("connection established: %s -- %s", clientConn.RemoteAddr().String(), remoteAddress)
+	log.Debugf("connection established: %s - %s", clientConn.RemoteAddr().String(), remoteAddress)
 
-	ConnForwarding(t.clientConn, t.remoteConn)
+	Transmit(t.clientConn, t.remoteConn)
 
-	log.Debugf("connection closed: %s -- %s", clientConn.RemoteAddr().String(), remoteAddress)
+	log.Debugf("connection closed: %s - %s", clientConn.RemoteAddr().String(), remoteAddress)
 }
 
-func ConnForwarding(c1, c2 net.Conn) {
+func Transmit(c1, c2 net.Conn) {
 	defer c1.Close() // it's ok to close connection twice
 	defer c2.Close()
 	go func() {

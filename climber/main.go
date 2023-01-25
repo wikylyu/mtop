@@ -2,16 +2,21 @@ package main
 
 import (
 	"bufio"
+	"context"
+	"errors"
+	"io"
 	"math/rand"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"strconv"
-
-	log "github.com/sirupsen/logrus"
+	"time"
 
 	"github.com/elazarl/goproxy"
+	socks "github.com/firefart/gosocks"
+	log "github.com/sirupsen/logrus"
 	"github.com/wikylyu/mtop/config"
 	"github.com/wikylyu/mtop/tunnel"
 	"github.com/wikylyu/mtop/tunnel/protocol/mtop"
@@ -59,6 +64,26 @@ func getServer() *ServerConfig {
 	return servers[i]
 }
 
+func DialHostAndPort(hostname string, port uint16) (*mtop.MTopClientConn, error) {
+	server := getServer()
+	if server == nil {
+		return nil, errors.New("no available server")
+	}
+	mc, err := mtop.Dial(server.CA, server.Host, server.Username, server.Password, hostname, port)
+	if err != nil {
+		return nil, err
+	}
+	return mc, nil
+}
+
+func DialURL(u *url.URL) (*mtop.MTopClientConn, error) {
+	port, err := strconv.ParseUint(u.Port(), 10, 16)
+	if err != nil {
+		port = 80
+	}
+	return DialHostAndPort(u.Hostname(), uint16(port))
+}
+
 func runHTTPProxy() {
 	var cfg struct {
 		Listen string `json:"listen" yaml:"listen"`
@@ -72,15 +97,7 @@ func runHTTPProxy() {
 	proxy := goproxy.NewProxyHttpServer()
 	proxy.Verbose = log.GetLevel() > log.InfoLevel
 	proxy.OnRequest().DoFunc(func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-		server := getServer()
-		if server == nil {
-			return req, goproxy.NewResponse(req, goproxy.ContentTypeText, http.StatusBadGateway, "")
-		}
-		port, err := strconv.ParseUint(req.URL.Port(), 10, 16)
-		if err != nil {
-			port = 80
-		}
-		mc, err := mtop.Dial(server.CA, server.Host, server.Username, server.Password, req.URL.Hostname(), uint16(port))
+		mc, err := DialURL(req.URL)
 		if err != nil {
 			return req, goproxy.NewResponse(req, goproxy.ContentTypeText, http.StatusBadGateway, "")
 		}
@@ -100,15 +117,7 @@ func runHTTPProxy() {
 	})
 	proxy.OnRequest().HijackConnect(func(req *http.Request, client net.Conn, ctx *goproxy.ProxyCtx) {
 		defer client.Close()
-		server := getServer()
-		if server == nil {
-			return
-		}
-		port, err := strconv.ParseUint(req.URL.Port(), 10, 16)
-		if err != nil {
-			port = 80
-		}
-		mc, err := mtop.Dial(server.CA, server.Host, server.Username, server.Password, req.URL.Hostname(), uint16(port))
+		mc, err := DialURL(req.URL)
 		if err != nil {
 			return
 		}
@@ -127,15 +136,75 @@ func runHTTPProxy() {
 			return
 		}
 
-		tunnel.ConnForwarding(client, mc)
+		tunnel.Transmit(client, mc)
 	})
-	log.Infof("http proxy on %s", cfg.Listen)
+	log.Infof("starting http proxy on %s", cfg.Listen)
 	http.ListenAndServe(cfg.Listen, proxy)
 }
 
-func main() {
+type socks5Handler struct {
+}
 
+func (s *socks5Handler) PreHandler(req socks.Request) (io.ReadWriteCloser, *socks.Error) {
+	var addr string
+	if req.AddressType == socks.RequestAddressTypeDomainname {
+		addr = string(req.DestinationAddress)
+	} else {
+		addr = net.IP(req.DestinationAddress).String()
+	}
+	mc, err := DialHostAndPort(addr, req.DestinationPort)
+	if err != nil {
+		return nil, &socks.Error{Reason: socks.RequestReplyHostUnreachable}
+	}
+	return mc, nil
+}
+
+func (s *socks5Handler) Refresh(ctx context.Context) {
+}
+
+func (s *socks5Handler) CopyFromRemoteToClient(ctx context.Context, remote io.ReadCloser, client io.WriteCloser) error {
+	_, err := io.Copy(client, remote)
+	return err
+}
+
+func (s *socks5Handler) CopyFromClientToRemote(ctx context.Context, client io.ReadCloser, remote io.WriteCloser) error {
+	_, err := io.Copy(remote, client)
+	return err
+}
+
+func (s *socks5Handler) Cleanup() error {
+	return nil
+}
+
+func runSOCKS5Proxy() {
+	var cfg struct {
+		Listen  string `json:"listen" yaml:"listen"`
+		Timeout int    `json:"timeout" yaml:"timeout"`
+	}
+	if err := config.Unmarshal("socks5", &cfg); err != nil {
+		panic(err)
+	} else if cfg.Listen == "" {
+		return
+	}
+
+	handler := &socks5Handler{}
+
+	p := socks.Proxy{
+		ServerAddr:   cfg.Listen,
+		Proxyhandler: handler,
+		Timeout:      time.Duration(cfg.Timeout) * time.Second,
+		Log:          log.New(),
+	}
+	log.Infof("starting SOCKS server on %s", cfg.Listen)
+	if err := p.Start(); err != nil {
+		log.Warnf("socks5 server error: %v", err)
+	}
+	<-p.Done
+}
+
+func main() {
 	go runHTTPProxy()
+	go runSOCKS5Proxy()
 
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt, os.Kill)

@@ -5,6 +5,10 @@ log:
 http:
   listen: :10811
 
+socks5:
+  listen: :10801
+  timeout: 60
+
 servers:
   - host: "127.0.0.1:4433" # including port
     username: "test"
