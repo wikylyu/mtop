@@ -1,15 +1,12 @@
 package main
 
 import (
-	"crypto/tls"
-	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/wikylyu/mtop/config"
-	"github.com/wikylyu/mtop/tunnel/protocol"
+	"github.com/wikylyu/mtop/tunnel/protocol/mtop"
 )
 
 const (
@@ -35,42 +32,14 @@ func main() {
 		panic(err)
 	}
 	for _, server := range servers {
-		tlsConf := &tls.Config{}
-		if server.CA != "" {
-			certPool := x509.NewCertPool()
-			pem, err := ioutil.ReadFile("../keys/ca.crt")
-			if err != nil {
-				panic(err)
-			}
-			if !certPool.AppendCertsFromPEM(pem) {
-				panic("failed")
-			}
-			tlsConf.RootCAs = certPool
-		}
-
-		conn, err := tls.Dial("tcp", server.Host, tlsConf)
+		mc, err := mtop.Dial(server.CA, server.Host, server.Username, server.Password, "www.baidu.com", 80)
 		if err != nil {
-			log.Fatalf("connect to server error: %v", err)
+			log.Warnf("mtop dial error: %v", err)
+			continue
 		}
-		defer conn.Close()
+		defer mc.Close()
 
-		req := protocol.NewMTopAuthenticationMessage(
-			protocol.MTopVersion1, protocol.MTopMethodConnect, server.Username, server.Password,
-			protocol.NewMTopAddress(protocol.MTopAddressTypeDomain, nil, "www.baidu.com", 80),
-		)
-
-		if _, err := conn.Write(req.Bytes()); err != nil {
-			log.Fatalf("write error: %v", err)
-		}
-
-		resp, err := protocol.ParseMTopResponseMessage(conn)
-		if err != nil {
-			log.Fatalf("read error: %v", err)
-		}
-		log.Infof("verion: %d", resp.Version)
-		log.Infof("Status: %d", resp.Status)
-
-		if n, err := conn.Write([]byte("GET / HTTP/1.1\r\nHost: www.baidu.com\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/109.0\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8\r\nAccept-Language: en,en-US;q=0.8,zh;q=0.5,zh-CN;q=0.3\r\nAccept-Encoding: gzip, deflate, br\r\nConnection: closed\r\n\r\n")); err != nil {
+		if n, err := mc.Write([]byte("GET / HTTP/1.1\r\nHost: www.baidu.com\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/109.0\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8\r\nAccept-Language: en,en-US;q=0.8,zh;q=0.5,zh-CN;q=0.3\r\nAccept-Encoding: gzip, deflate, br\r\nConnection: closed\r\n\r\n")); err != nil {
 			log.Fatalf("write error: %v", err)
 		} else {
 			log.Debugf("write %d", n)
@@ -78,7 +47,7 @@ func main() {
 
 		buf := make([]byte, 4096)
 		for {
-			n, err := conn.Read(buf)
+			n, err := mc.Read(buf)
 			if err != nil || n <= 0 {
 				break
 			}
