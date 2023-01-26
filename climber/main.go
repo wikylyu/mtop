@@ -154,7 +154,7 @@ func (s *socks5Handler) PreHandler(req socks.Request) (io.ReadWriteCloser, *sock
 	}
 	mc, err := DialHostAndPort(addr, req.DestinationPort)
 	if err != nil {
-		return nil, &socks.Error{Reason: socks.RequestReplyHostUnreachable}
+		return nil, &socks.Error{Reason: socks.RequestReplyHostUnreachable, Err: err}
 	}
 	return mc, nil
 }
