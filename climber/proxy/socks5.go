@@ -8,7 +8,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	socks "github.com/firefart/gosocks"
+	socks "github.com/wikylyu/gosocks"
 	"github.com/wikylyu/mtop/config"
 )
 
