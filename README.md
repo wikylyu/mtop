@@ -91,6 +91,9 @@ The initial handshake consists of the following:
         0x1 Version not supported.
         0x2 Auth failure
         0x3 Connection failure.(Connecting to remote failure)
+   
+  
+  In practise, the server will not response any message except *Success*, they just close the connection.
 
 
 ## Generate self-signed certificate
