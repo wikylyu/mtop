@@ -23,7 +23,11 @@ func (u *User) Auth(plain string) bool {
 	if u.Password == "" {
 		return false
 	}
+	return u.Password == u.encryptPassword(plain)
+}
+
+func (u *User) encryptPassword(plain string) string {
 	h := sha256.New()
-	h.Write([]byte(plain))
-	return u.Password == fmt.Sprintf("%x", h.Sum(nil))
+	h.Write([]byte(u.Salt + "@" + plain))
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
