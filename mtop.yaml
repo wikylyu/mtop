@@ -1,5 +1,3 @@
-
-
 tls:
   listen: ":4433"
   crt: ./keys/server.crt
@@ -7,3 +5,8 @@ tls:
 
 log:
   level: "debug"
+
+db:
+  debug: true
+  driverName: psql # mysql
+  dsn: "postgres://postgres@127.0.0.1/mtop?sslmode=disable"

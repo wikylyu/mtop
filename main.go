@@ -6,6 +6,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/wikylyu/mtop/config"
+	"github.com/wikylyu/mtop/db"
 	"github.com/wikylyu/mtop/tunnel"
 )
 
@@ -16,6 +17,21 @@ const (
 func init() {
 	config.Init(AppName)
 	config.InitLog()
+	initDatabase()
+}
+
+func initDatabase() {
+	var cfg struct {
+		Debug      bool   `json:"debug" yaml:"debug"`
+		DriverName string `json:"driverName" yaml:"driverName"`
+		DSN        string `json:"dsn" yaml:"dsn"`
+	}
+	if err := config.Unmarshal("db", &cfg); err != nil {
+		panic(err)
+	}
+	if err := db.Init(cfg.DriverName, cfg.DSN, cfg.Debug); err != nil {
+		panic(err)
+	}
 }
 
 func main() {

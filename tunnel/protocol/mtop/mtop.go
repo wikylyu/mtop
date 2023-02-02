@@ -162,6 +162,7 @@ func ParseMTopAuthenticationMessage(c io.Reader) (*MTopAuthenticationMessage, er
 	return NewMTopAuthenticationMessage(ver, method, username, password, address), nil
 }
 
+/* 读取首字节表示长度，跟着文本的数据 */
 func parseText(reader *bufio.Reader) (string, error) {
 	len, err := reader.ReadByte()
 	if err != nil {
