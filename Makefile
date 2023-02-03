@@ -10,3 +10,6 @@ climber:
 
 mctl:
 	CGO_ENABLED=0 go build -o bin/mctl mctl/main.go
+
+dist: mtop climber mctl
+	tar -C bin/ -jcvf dist/mtop_linux64.tar.bz2 .
