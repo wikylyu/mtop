@@ -1,0 +1,13 @@
+[Unit]
+Description=MTop Service
+After=network.target
+Wants=network-online.target
+
+[Service]
+Restart=always
+Type=simple
+ExecStart=${MTOP_PATH}
+Environment=
+
+[Install]
+WantedBy=multi-user.target

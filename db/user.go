@@ -38,7 +38,7 @@ func randomSalt(length int) string {
 	return string(b)
 }
 
-func CreateUser(username, password, salt string, update bool) (*User, error) {
+func CreateUser(username, password, salt string) (*User, error) {
 	if salt == "" {
 		salt = randomSalt(12)
 	}
@@ -48,11 +48,6 @@ func CreateUser(username, password, salt string, update bool) (*User, error) {
 	}
 	user.Password = user.encryptPassword(password)
 	q := DB().NewInsert().Model(&user)
-
-	if update {
-		q = q.On(`CONFLICT (username) DO UPDATE`).
-			Set(`"salt" = ?`, user.Salt).Set(`"password"=?`, user.Password)
-	}
 
 	if _, err := q.Exec(context.Background()); err != nil {
 		log.Errorf("DB Error: %v", err)

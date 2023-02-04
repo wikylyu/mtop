@@ -1,13 +1,24 @@
 package config
 
 import (
+	"path"
+
 	"github.com/spf13/viper"
 )
 
-func ViperInit(appname string) error {
-	viper.SetConfigName(appname)
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
+var PREFIX string
+
+func ViperInit(appname, configFile string) error {
+	if configFile == "" {
+		viper.SetConfigName(appname)
+		viper.SetConfigType("yaml")
+		viper.AddConfigPath(".")
+		if PREFIX != "" {
+			viper.AddConfigPath(path.Join(PREFIX, "etc/mtop"))
+		}
+	} else {
+		viper.SetConfigFile(configFile)
+	}
 	return viper.ReadInConfig() // Find and read the config file
 }
 

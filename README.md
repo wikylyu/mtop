@@ -107,3 +107,23 @@ Replace example.com to your domain name or use IP:127.0.0.1 for testing.
 ```openssl req -newkey rsa:2048 -nodes -keyout server.key -subj "/C=CN/ST=GD/L=SZ/O=Acme, Inc./CN=*.example.com" -out server.csr```
 
 ```openssl x509 -req -extfile <(printf "subjectAltName=DNS:example.com,DNS:www.example.com") -days 365 -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt```
+
+## Make & Install
+
+1. make
+    
+    (compile mtop to ./bin/)
+
+2. make install
+   
+    (install mtop to /usr/local/)
+
+3. PREFIX=/custom/folder/ make install
+
+    (install mtop to /custom/folder/)
+
+4. make install-systemd
+   
+    (install systemd script)
+
+After installing the mtop executables, you'll have to modify their config files to make them work.

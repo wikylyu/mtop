@@ -32,7 +32,8 @@ func parseLogLevel(levelName string) log.Level {
  */
 func InitLog() {
 	var cfg struct {
-		Level string `json:"level" yaml:"level"`
+		Level  string `json:"level" yaml:"level"`
+		Format string `jsn:"format" yaml:"format"`
 	}
 	if err := Unmarshal("log", &cfg); err != nil {
 		panic(err)
@@ -57,10 +58,17 @@ func InitLog() {
 		},
 	})
 	log.SetReportCaller(true)
-	log.SetFormatter(&log.JSONFormatter{
-		CallerPrettyfier: func(f *runtime.Frame) (string, string) {
-			filename := path.Base(f.File)
-			return fmt.Sprintf("%s()", f.Function), fmt.Sprintf("%s:%d", filename, f.Line)
-		},
-	})
+	callerPrettyfier := func(f *runtime.Frame) (string, string) {
+		filename := path.Base(f.File)
+		return fmt.Sprintf("%s()", f.Function), fmt.Sprintf("%s:%d", filename, f.Line)
+	}
+	if cfg.Format == "json" {
+		log.SetFormatter(&log.JSONFormatter{
+			CallerPrettyfier: callerPrettyfier,
+		})
+	} else {
+		log.SetFormatter(&log.TextFormatter{
+			CallerPrettyfier: callerPrettyfier,
+		})
+	}
 }

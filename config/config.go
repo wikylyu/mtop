@@ -1,7 +1,7 @@
 package config
 
-func Init(prefix string) error {
-	return ViperInit(prefix)
+func Init(name, configFile string) error {
+	return ViperInit(name, configFile)
 }
 
 func Unmarshal(k string, v interface{}) error {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"os"
 	"os/signal"
 
@@ -12,17 +13,24 @@ const (
 	AppName = "climber"
 )
 
-func init() {
-	config.Init(AppName)
+func initClimber(configFile string) {
+	config.Init(AppName, configFile)
 	config.InitLog()
 	proxy.Init()
 }
 
 func main() {
+
+	var configFile string
+	flag.StringVar(&configFile, "config", "", "config file path")
+	flag.Parse()
+
+	initClimber(configFile)
+
 	go proxy.RunHTTPProxy()
 	go proxy.RunSOCKS5Proxy()
 
-	quit := make(chan os.Signal)
-	signal.Notify(quit, os.Interrupt, os.Kill)
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
 	<-quit
 }

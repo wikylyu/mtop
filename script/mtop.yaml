@@ -1,12 +1,12 @@
 # this is a config template
 
 tls:
-  listen: ":4433"
-  crt: ./keys/server.crt
-  key: ./keys/server.key
+  listen: ":443"
+  crt: /etc/ssl/certs/server.crt
+  key: /etc/ssl/certs/server.key
 
 log:
-  level: "debug"
+  level: "info"
   format: "text"
 
 db:

@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"flag"
 
 	log "github.com/sirupsen/logrus"
 
@@ -14,8 +15,8 @@ const (
 	AppName = "mtop"
 )
 
-func init() {
-	config.Init(AppName)
+func initMTop(configFile string) {
+	config.Init(AppName, configFile)
 	config.InitLog()
 	initDatabase()
 }
@@ -34,27 +35,41 @@ func initDatabase() {
 	}
 }
 
-func main() {
-	var tlsCfg struct {
+func initTSLConfig() (string, *tls.Config) {
+	var cfg struct {
 		Listen string `json:"listen" yaml:"listen"`
 		CRT    string `json:"crt" yaml:"crt"`
 		Key    string `json:"key" yaml:"key"`
 	}
-	if err := config.Unmarshal("tls", &tlsCfg); err != nil {
+	if err := config.Unmarshal("tls", &cfg); err != nil {
 		panic(err)
 	}
+	if cfg.CRT == "" || cfg.Key == "" {
+		log.Fatalf("certificate key not configured")
+	}
 
-	cer, err := tls.LoadX509KeyPair(tlsCfg.CRT, tlsCfg.Key)
+	cer, err := tls.LoadX509KeyPair(cfg.CRT, cfg.Key)
 	if err != nil {
 		log.Fatalf("load x509 key error: %v", err)
 	}
 
-	config := &tls.Config{Certificates: []tls.Certificate{cer}}
-	ln, err := tls.Listen("tcp", tlsCfg.Listen, config)
+	return cfg.Listen, &tls.Config{Certificates: []tls.Certificate{cer}}
+}
+
+func main() {
+
+	var configFile string
+	flag.StringVar(&configFile, "config", "", "config file path")
+	flag.Parse()
+
+	initMTop(configFile)
+
+	listen, config := initTSLConfig()
+	ln, err := tls.Listen("tcp", listen, config)
 	if err != nil {
-		log.Fatalf("listen on %s error: %v", tlsCfg.Listen, err)
+		log.Fatalf("listen on %s error: %v", listen, err)
 	}
-	log.Infof("listen on %s", tlsCfg.Listen)
+	log.Infof("listen on %s", listen)
 	defer ln.Close()
 
 	for {
