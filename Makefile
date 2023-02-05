@@ -20,19 +20,33 @@ mctl:
 dist: mtop climber mctl
 	tar -C bin/ -jcvf dist/mtop_linux64.tar.bz2 .
 
-install: all
+install-mtop: mtop mctl
 	mkdir -p $(PREFIX)/bin/
 	mkdir -p $(PREFIX)/etc/mtop/
-	install bin/* $(PREFIX)/bin/
+	install bin/mtop $(PREFIX)/bin/
+	install bin/mctl $(PREFIX)/bin/
 	install --mode=644 script/mtop.yaml $(PREFIX)/etc/mtop/
-	install --mode=644 script/climber.yaml $(PREFIX)/etc/mtop/
 
-uninstall:
+install-climber: climber
+	mkdir -p $(PREFIX)/bin/
+	mkdir -p $(PREFIX)/etc/climber/
+	install bin/climber $(PREFIX)/bin/
+	install --mode=644 script/climber.yaml $(PREFIX)/etc/climber/
+
+uninstall-mtop:
 	rm $(PREFIX)/bin/mtop
 	rm $(PREFIX)/bin/mctl
-	rm $(PREFIX)/bin/climber
 	rm -r $(PREFIX)/etc/mtop/
 
-install-systemd:
+uninstall-climber:
+	rm $(PREFIX)/bin/climber
+	rm -r $(PREFIX)/etc/climber/
+
+install-mtop-systemd:
 	cat script/mtop.service | MTOP_PATH=$(PREFIX)/bin/mtop envsubst > /etc/systemd/system/mtop.service
+	systemctl daemon-reload
+
+
+install-climber-systemd:
+	cat script/climber.service | CLIMBER_PATH=$(PREFIX)/bin/climber envsubst > /etc/systemd/system/climber.service
 	systemctl daemon-reload

@@ -14,7 +14,7 @@ func ViperInit(appname, configFile string) error {
 		viper.SetConfigType("yaml")
 		viper.AddConfigPath(".")
 		if PREFIX != "" {
-			viper.AddConfigPath(path.Join(PREFIX, "etc/mtop"))
+			viper.AddConfigPath(path.Join(PREFIX, "etc", appname))
 		}
 	} else {
 		viper.SetConfigFile(configFile)

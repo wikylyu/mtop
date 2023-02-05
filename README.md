@@ -110,20 +110,34 @@ Replace example.com to your domain name or use IP:127.0.0.1 for testing.
 
 ## Make & Install
 
-1. make
+### Install MTop
     
-    (compile mtop to ./bin/)
-
-2. make install
+* install mtop to /usr/local/
+  
+  ```make install-mtop```
    
-    (install mtop to /usr/local/)
+* install mtop to /custom/folder/
 
-3. PREFIX=/custom/folder/ make install
+  ```PREFIX=/custom/folder/ make install-mtop```
 
-    (install mtop to /custom/folder/)
+* install mtop systemd script
 
-4. make install-systemd
+  ```make install-mtop-systemd```
+
+### Install Climber
+
+*climber is the client for mtop service.*
+
+* install climber to /usr/local/
+  
+  ```make install-climber```
    
-    (install systemd script)
+* install climber to /custom/folder/
 
-After installing the mtop executables, you'll have to modify their config files to make them work.
+  ```PREFIX=/custom/folder/ make install-climber```
+
+* install climber systemd script
+
+  ```make install-climber-systemd```
+
+After installing, you'll have to modify their config files to make them work.
