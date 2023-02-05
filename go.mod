@@ -11,7 +11,7 @@ require (
 	github.com/uptrace/bun/dialect/pgdialect v1.1.11
 	github.com/uptrace/bun/driver/pgdriver v1.1.11
 	github.com/uptrace/bun/extra/bundebug v1.1.11
-	github.com/wikylyu/gosocks v0.0.0-20230131125912-e2160e49832a
+	github.com/wikylyu/gosocks v0.0.0-20230205050347-57b417dc2cf5
 )
 
 require (

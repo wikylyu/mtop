@@ -66,5 +66,7 @@ func RunHTTPProxy() {
 		tunnel.Transmit(client, mc)
 	})
 	log.Infof("starting http proxy on %s", cfg.Listen)
-	http.ListenAndServe(cfg.Listen, proxy)
+	if err := http.ListenAndServe(cfg.Listen, proxy); err != nil {
+		log.Errorf("http server error: %v", err)
+	}
 }

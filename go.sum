@@ -209,6 +209,8 @@ github.com/vmihailenco/tagparser/v2 v2.0.0 h1:y09buUbR+b5aycVFQs/g70pqKVZNBmxwAh
 github.com/vmihailenco/tagparser/v2 v2.0.0/go.mod h1:Wri+At7QHww0WTrCBeu4J6bNtoV6mEfg5OIWRZA9qds=
 github.com/wikylyu/gosocks v0.0.0-20230131125912-e2160e49832a h1:+LVLLd6/cZSwuyc60/Etdd6FNRuKLYA0xzaQujRpFAw=
 github.com/wikylyu/gosocks v0.0.0-20230131125912-e2160e49832a/go.mod h1:Smi9KiARHRBJciHcrGT6+BahCKOk6LvmzaXr2DkKySs=
+github.com/wikylyu/gosocks v0.0.0-20230205050347-57b417dc2cf5 h1:9RPvpXL+EKiKbHx8pzGlxQtY/qVOg0EasbLpCE/oerQ=
+github.com/wikylyu/gosocks v0.0.0-20230205050347-57b417dc2cf5/go.mod h1:Smi9KiARHRBJciHcrGT6+BahCKOk6LvmzaXr2DkKySs=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

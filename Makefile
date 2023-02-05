@@ -25,13 +25,13 @@ install-mtop: mtop mctl
 	mkdir -p $(PREFIX)/etc/mtop/
 	install bin/mtop $(PREFIX)/bin/
 	install bin/mctl $(PREFIX)/bin/
-	install --mode=644 script/mtop.yaml $(PREFIX)/etc/mtop/
+	cp -n script/mtop.yaml $(PREFIX)/etc/mtop/
 
 install-climber: climber
 	mkdir -p $(PREFIX)/bin/
 	mkdir -p $(PREFIX)/etc/climber/
 	install bin/climber $(PREFIX)/bin/
-	install --mode=644 script/climber.yaml $(PREFIX)/etc/climber/
+	cp -n script/climber.yaml $(PREFIX)/etc/climber/
 
 uninstall-mtop:
 	rm $(PREFIX)/bin/mtop
