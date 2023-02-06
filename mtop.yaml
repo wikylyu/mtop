@@ -5,6 +5,7 @@ server:
   listen: ":4433"
   crt: ./keys/server.crt
   key: ./keys/server.key
+  proto: "mtop-example" # change it to your custom proto name
 
 log:
   level: "debug"

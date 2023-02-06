@@ -137,9 +137,9 @@ func (mc *MTopClientConn) SetWriteDeadline(t time.Time) error {
 	return mc.c.SetWriteDeadline(t)
 }
 
-func getTLSConfig(ca string) (*tls.Config, error) {
+func getTLSConfig(ca, proto string) (*tls.Config, error) {
 	tlsConf := &tls.Config{
-		NextProtos: []string{"mtop"},
+		NextProtos: []string{proto},
 	}
 	if ca != "" {
 		certPool := x509.NewCertPool()
@@ -168,10 +168,10 @@ func parseMTopAddressFromHost(target string, port uint16) *MTopAddress {
 	return addr
 }
 
-func DialTLS(ca, server string, username, password string, target string, port uint16) (*MTopClientConn, error) {
+func DialTLS(ca, server string, username, password string, target string, port uint16, proto string) (*MTopClientConn, error) {
 	addr := parseMTopAddressFromHost(target, port)
 
-	tlsConf, err := getTLSConfig(ca)
+	tlsConf, err := getTLSConfig(ca, proto)
 	if err != nil {
 		return nil, err
 	}
@@ -187,10 +187,10 @@ func DialTLS(ca, server string, username, password string, target string, port u
 	return mc, nil
 }
 
-func DialQUIC(ca, server string, username, password string, target string, port uint16) (*MTopClientConn, error) {
+func DialQUIC(ca, server string, username, password string, target string, port uint16, proto string) (*MTopClientConn, error) {
 	addr := parseMTopAddressFromHost(target, port)
 
-	tlsConf, err := getTLSConfig(ca)
+	tlsConf, err := getTLSConfig(ca, proto)
 	if err != nil {
 		return nil, err
 	}

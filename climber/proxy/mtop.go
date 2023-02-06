@@ -17,6 +17,7 @@ type ServerConfig struct {
 	Password string `json:"password" yaml:"password"`
 	Type     string `json:"type" yaml:"type"`
 	CA       string `json:"ca" yaml:"ca"`
+	Proto    string `json:"proto" yaml:"proto"`
 	Enabled  bool   `json:"enabled" yaml:"enabled"`
 }
 
@@ -29,6 +30,9 @@ func Init() {
 	}
 	servers = make([]*ServerConfig, 0)
 	for _, s := range allServers {
+		if s.Proto == "" {
+			s.Proto = "mtop"
+		}
 		if s.Enabled {
 			servers = append(servers, s)
 		}
@@ -52,9 +56,9 @@ func DialHostAndPort(hostname string, port uint16) (*mtop.MTopClientConn, error)
 	var mc *mtop.MTopClientConn
 	var err error
 	if strings.ToLower(server.Type) == "quic" {
-		mc, err = mtop.DialQUIC(server.CA, server.Host, server.Username, server.Password, hostname, port)
+		mc, err = mtop.DialQUIC(server.CA, server.Host, server.Username, server.Password, hostname, port, server.Proto)
 	} else {
-		mc, err = mtop.DialTLS(server.CA, server.Host, server.Username, server.Password, hostname, port)
+		mc, err = mtop.DialTLS(server.CA, server.Host, server.Username, server.Password, hostname, port, server.Proto)
 	}
 	if err != nil {
 		return nil, err

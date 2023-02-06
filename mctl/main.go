@@ -19,7 +19,6 @@ var rootCmd = &cobra.Command{
 	Short: AppName + " is a command used to config mtop",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		// Do Stuff Here
 	},
 }
 

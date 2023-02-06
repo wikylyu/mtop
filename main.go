@@ -77,6 +77,7 @@ func initServerConfig() (string, string, *tls.Config) {
 		Listen string `json:"listen" yaml:"listen"`
 		CRT    string `json:"crt" yaml:"crt"`
 		Key    string `json:"key" yaml:"key"`
+		Proto  string `json:"proto" yaml:"proto"`
 	}
 	if err := config.Unmarshal("server", &cfg); err != nil {
 		panic(err)
@@ -90,9 +91,13 @@ func initServerConfig() (string, string, *tls.Config) {
 		log.Fatalf("load x509 key error: %v", err)
 	}
 
+	if cfg.Proto == "" {
+		cfg.Proto = "mtop"
+	}
+
 	return strings.ToLower(cfg.Type), cfg.Listen, &tls.Config{
 		Certificates: []tls.Certificate{cer},
-		NextProtos:   []string{"mtop"},
+		NextProtos:   []string{cfg.Proto},
 	}
 }
 
