@@ -1,6 +1,7 @@
 # this is a config template
 
-tls:
+server:
+  type: "tls"
   listen: ":443"
   crt: /etc/ssl/certs/server.crt
   key: /etc/ssl/certs/server.key

@@ -12,6 +12,7 @@ socks5:
 servers:
   - host: "example.com:1312" # including port
     username: "test"
+    type: "tls" # quic or tls, tls is default.
     password: "123456"
     ca: "/etc/ssh/certs/ca.crt" # use custom ca, allowed to be empty
     enabled: true

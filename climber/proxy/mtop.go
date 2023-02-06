@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/wikylyu/mtop/config"
 	"github.com/wikylyu/mtop/tunnel/protocol/mtop"
@@ -14,6 +15,7 @@ type ServerConfig struct {
 	Host     string `json:"host" yaml:"host"`
 	Username string `json:"username" yaml:"username"`
 	Password string `json:"password" yaml:"password"`
+	Type     string `json:"type" yaml:"type"`
 	CA       string `json:"ca" yaml:"ca"`
 	Enabled  bool   `json:"enabled" yaml:"enabled"`
 }
@@ -47,7 +49,13 @@ func DialHostAndPort(hostname string, port uint16) (*mtop.MTopClientConn, error)
 	if server == nil {
 		return nil, errors.New("no available server")
 	}
-	mc, err := mtop.Dial(server.CA, server.Host, server.Username, server.Password, hostname, port)
+	var mc *mtop.MTopClientConn
+	var err error
+	if strings.ToLower(server.Type) == "quic" {
+		mc, err = mtop.DialQUIC(server.CA, server.Host, server.Username, server.Password, hostname, port)
+	} else {
+		mc, err = mtop.DialTLS(server.CA, server.Host, server.Username, server.Password, hostname, port)
+	}
 	if err != nil {
 		return nil, err
 	}

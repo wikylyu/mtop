@@ -78,6 +78,7 @@ func Transmit(c1, c2 net.Conn) {
 		for {
 			c1.SetReadDeadline(time.Now().Add(time.Minute * 2)) // 120 seconds for timeout
 			n, err := c1.Read(buf)
+
 			if err != nil || n <= 0 {
 				break
 			}

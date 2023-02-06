@@ -46,6 +46,7 @@ func RunHTTPProxy() {
 		defer client.Close()
 		mc, err := DialURL(req.URL)
 		if err != nil {
+			log.Warnf("Connect to %s error: %v", req.URL.String(), err)
 			return
 		}
 		defer mc.Close()

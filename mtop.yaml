@@ -1,6 +1,7 @@
 # this is a config template
 
-tls:
+server:
+  type: "quic" # tls or quic
   listen: ":4433"
   crt: ./keys/server.crt
   key: ./keys/server.key

@@ -11,7 +11,7 @@ MTop follows the principle -- `do one thing and do it well`.
 MTop is just a network proxy for data forwarding. It provides below features:
 
 * User auth with username/password
-* Transport protocol is configurable. By default, it's TLS1.3. More transport protocol may be supported in the future, but they must be a security protocol, such as [QUIC](https://en.wikipedia.org/wiki/QUIC).
+* Transport protocol is configurable. By default, it's TLS1.3, and [QUIC](https://en.wikipedia.org/wiki/QUIC) is supported. More transport protocol may be supported in the future, but they must be a security protocol.
 * Custom CA. Allowed to use self signed certificate.
 * MySQL and PostgreSQL integration for user management, which means you can just insert/update database to manage large scale of users programmatically, without modifying config file.
 
@@ -99,10 +99,10 @@ The initial handshake consists of the following:
 ## Dataflow
 
 ```
-+-----------------+                          +--------------------+                             +----------------+
-|  Application    |    HTTP/SOCKS5 PROXY     |  Climber           |    MTOP Tunnel (over TLS)   |  MTop Server   |
-|  (Browser, etc) |  <-------------------->  |  (Running locally) |  <------------------------> |  (Remote)      |
-+-----------------+                          +--------------------+                             +----------------+
++-----------------+                    +--------------------+                                 +----------------+
+|  Application    |    HTTP/SOCKS5     |  Climber           |    MTOP Tunnel(over TLS/QUIC)   |  MTop Server   |
+|  (Browser, etc) |  <-------------->  |  (Running locally) |  <----------------------------> |  (Remote)      |
++-----------------+                    +--------------------+                                 +----------------+
 ```
 
 ## Generate self-signed certificate

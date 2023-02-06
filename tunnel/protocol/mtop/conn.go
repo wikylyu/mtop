@@ -1,12 +1,16 @@
 package mtop
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
 	"io/ioutil"
 	"net"
 	"time"
+
+	quicgo "github.com/quic-go/quic-go"
+	"github.com/wikylyu/mtop/tunnel/protocol/quic"
 )
 
 type MTopServerConn struct {
@@ -133,18 +137,10 @@ func (mc *MTopClientConn) SetWriteDeadline(t time.Time) error {
 	return mc.c.SetWriteDeadline(t)
 }
 
-func Dial(ca, server string, username, password string, target string, port uint16) (*MTopClientConn, error) {
-	var addr *MTopAddress = nil
-	ip := net.ParseIP(target)
-	if ip == nil {
-		addr = NewMTopAddress(MTopAddressTypeDomain, nil, target, port)
-	} else if ip.To4() == nil {
-		addr = NewMTopAddress(MTopAddressTypeIPv6, ip, "", port)
-	} else {
-		addr = NewMTopAddress(MTopAddressTypeIPv4, ip.To4(), "", port)
+func getTLSConfig(ca string) (*tls.Config, error) {
+	tlsConf := &tls.Config{
+		NextProtos: []string{"mtop"},
 	}
-
-	tlsConf := &tls.Config{}
 	if ca != "" {
 		certPool := x509.NewCertPool()
 		pem, err := ioutil.ReadFile(ca)
@@ -156,12 +152,59 @@ func Dial(ca, server string, username, password string, target string, port uint
 		}
 		tlsConf.RootCAs = certPool
 	}
+	return tlsConf, nil
+}
+
+func parseMTopAddressFromHost(target string, port uint16) *MTopAddress {
+	var addr *MTopAddress = nil
+	ip := net.ParseIP(target)
+	if ip == nil {
+		addr = NewMTopAddress(MTopAddressTypeDomain, nil, target, port)
+	} else if ip.To4() == nil {
+		addr = NewMTopAddress(MTopAddressTypeIPv6, ip, "", port)
+	} else {
+		addr = NewMTopAddress(MTopAddressTypeIPv4, ip.To4(), "", port)
+	}
+	return addr
+}
+
+func DialTLS(ca, server string, username, password string, target string, port uint16) (*MTopClientConn, error) {
+	addr := parseMTopAddressFromHost(target, port)
+
+	tlsConf, err := getTLSConfig(ca)
+	if err != nil {
+		return nil, err
+	}
 
 	conn, err := tls.Dial("tcp", server, tlsConf)
 	if err != nil {
 		return nil, err
 	}
 	mc := NewMTopClientConn(conn, username, password, addr)
+	if err := mc.Connect(); err != nil {
+		return nil, err
+	}
+	return mc, nil
+}
+
+func DialQUIC(ca, server string, username, password string, target string, port uint16) (*MTopClientConn, error) {
+	addr := parseMTopAddressFromHost(target, port)
+
+	tlsConf, err := getTLSConfig(ca)
+	if err != nil {
+		return nil, err
+	}
+	conn, err := quicgo.DialAddr(server, tlsConf, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	stream, err := conn.OpenStreamSync(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	mc := NewMTopClientConn(quic.NewConn(stream, conn.RemoteAddr()), username, password, addr)
 	if err := mc.Connect(); err != nil {
 		return nil, err
 	}
