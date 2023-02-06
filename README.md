@@ -96,6 +96,15 @@ The initial handshake consists of the following:
   In practise, the server will not response any message except *Success*, they just close the connection.
 
 
+## Dataflow
+
+```
++-----------------+                          +--------------------+                             +----------------+
+|  Application    |    HTTP/SOCKS5 PROXY     |  Climber           |    MTOP Tunnel (over TLS)   |  MTop Server   |
+|  (Browser, etc) |  <-------------------->  |  (Running locally) |  <------------------------> |  (Remote)      |
++-----------------+                          +--------------------+                             +----------------+
+```
+
 ## Generate self-signed certificate
 
 Replace example.com to your domain name or use IP:127.0.0.1 for testing.
