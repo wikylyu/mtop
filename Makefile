@@ -6,7 +6,9 @@ endif
 
 all: mtop climber mctl
 
-GOFLAGS=-ldflags "-X github.com/wikylyu/mtop/config.PREFIX=$(PREFIX)"
+export GIT_COMMIT=$(shell git rev-list -1 HEAD)
+
+GOFLAGS=-ldflags "-X github.com/wikylyu/mtop/config.PREFIX=$(PREFIX) -X main.AppCommit=$(GIT_COMMIT)"
 
 mtop:
 	CGO_ENABLED=0 go build $(GOFLAGS) -o bin/mtop

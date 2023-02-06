@@ -3,23 +3,56 @@ package main
 import (
 	"context"
 	"crypto/tls"
-	"flag"
+	"fmt"
 	"strings"
 
 	quicgo "github.com/quic-go/quic-go"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 	"github.com/wikylyu/mtop/config"
 	"github.com/wikylyu/mtop/db"
 	"github.com/wikylyu/mtop/tunnel"
 	"github.com/wikylyu/mtop/tunnel/protocol/quic"
 )
 
-const (
-	AppName = "mtop"
-)
+const AppName = "mtop"
+const AppVersion = "0.0.2"
 
-func initMTop(configFile string) {
-	config.Init(AppName, configFile)
+var AppCommit = ""
+
+var rootCmd = &cobra.Command{
+	Use:   AppName,
+	Short: AppName + " is a network proxy server",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		stype, listen, config := initServerConfig()
+		if stype == "quic" {
+			runQUICServer(listen, config)
+		} else {
+			runTLSServer(listen, config)
+		}
+	},
+}
+
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: fmt.Sprintf("show %s's version", AppName),
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("%s version: %s\n", AppName, AppVersion)
+		fmt.Printf("git commit: %s\n", AppCommit)
+	},
+}
+
+var cfgFile string
+
+func init() {
+	cobra.OnInitialize(initMTop)
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", fmt.Sprintf("config file (default is %s/etc/%s/%s.yaml)", config.PREFIX, AppName, AppName))
+	rootCmd.AddCommand(versionCmd)
+}
+
+func initMTop() {
+	config.Init(AppName, cfgFile)
 	config.InitLog()
 	initDatabase()
 }
@@ -110,17 +143,5 @@ func runTLSServer(listen string, config *tls.Config) {
 }
 
 func main() {
-
-	var configFile string
-	flag.StringVar(&configFile, "config", "", "config file path")
-	flag.Parse()
-
-	initMTop(configFile)
-
-	stype, listen, config := initServerConfig()
-	if stype == "quic" {
-		runQUICServer(listen, config)
-	} else {
-		runTLSServer(listen, config)
-	}
+	rootCmd.Execute()
 }

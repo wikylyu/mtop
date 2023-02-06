@@ -7,7 +7,7 @@ import (
 	"github.com/wikylyu/mtop/db"
 )
 
-var userCmd = &cobra.Command{
+var UserCmd = &cobra.Command{
 	Use:   "user",
 	Short: "User management",
 
@@ -67,8 +67,8 @@ func init() {
 	userAddCmd.PersistentFlags().StringVarP(&password, "password", "p", "", "Password")
 	userAddCmd.PersistentFlags().StringVarP(&salt, "salt", "s", "", "Password salt used to encrypt")
 
-	userCmd.AddCommand(userAddCmd)
+	UserCmd.AddCommand(userAddCmd)
 
 	userDelCmd.PersistentFlags().StringVarP(&username, "username", "u", "", "Username")
-	userCmd.AddCommand(userDelCmd)
+	UserCmd.AddCommand(userDelCmd)
 }
