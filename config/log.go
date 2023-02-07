@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -25,6 +26,13 @@ func parseLogLevel(levelName string) log.Level {
 		level = log.InfoLevel
 	}
 	return level
+}
+
+type PlainFormatter struct {
+}
+
+func (f *PlainFormatter) Format(entry *log.Entry) ([]byte, error) {
+	return []byte(fmt.Sprintf("[%s] [%s] %s\n", time.Now().Format(`January 02, 2006 15:04:05`), entry.Level.String(), entry.Message)), nil
 }
 
 /*
@@ -67,8 +75,6 @@ func InitLog() {
 			CallerPrettyfier: callerPrettyfier,
 		})
 	} else {
-		log.SetFormatter(&log.TextFormatter{
-			CallerPrettyfier: callerPrettyfier,
-		})
+		log.SetFormatter(&PlainFormatter{})
 	}
 }

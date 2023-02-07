@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net"
 	"time"
@@ -13,9 +14,11 @@ import (
 )
 
 type socks5Handler struct {
+	caddr string
+	raddr string
 }
 
-func (s *socks5Handler) PreHandler(req socks.Request) (io.ReadWriteCloser, *socks.Error) {
+func (s *socks5Handler) PreHandler(caddr net.Addr, req socks.Request) (io.ReadWriteCloser, *socks.Error) {
 	var addr string
 	if req.AddressType == socks.RequestAddressTypeDomainname {
 		addr = string(req.DestinationAddress)
@@ -24,8 +27,12 @@ func (s *socks5Handler) PreHandler(req socks.Request) (io.ReadWriteCloser, *sock
 	}
 	mc, err := DialHostAndPort(addr, req.DestinationPort)
 	if err != nil {
+		log.Warnf("[socks] Connect to %s:%d error: %v", addr, req.DestinationPort, err)
 		return nil, socks.NewError(socks.RequestReplyHostUnreachable, err)
 	}
+	s.caddr = caddr.String()
+	s.raddr = fmt.Sprintf("%s:%d", addr, req.DestinationPort)
+	log.Infof("[socks] Connection established %s - %s", s.caddr, s.raddr)
 	return mc, nil
 }
 
@@ -39,10 +46,12 @@ func (s *socks5Handler) CopyFromRemoteToClient(ctx context.Context, remote io.Re
 
 func (s *socks5Handler) CopyFromClientToRemote(ctx context.Context, client io.ReadCloser, remote io.WriteCloser) error {
 	_, err := io.Copy(remote, client)
+
 	return err
 }
 
 func (s *socks5Handler) Cleanup() error {
+	log.Infof("[socks] Connection closed %s - %s", s.caddr, s.raddr)
 	return nil
 }
 
@@ -59,7 +68,7 @@ func RunSOCKS5Proxy() {
 
 	handler := &socks5Handler{}
 
-	p := socks.NewProxy(cfg.Listen, handler, nil, time.Duration(cfg.Timeout)*time.Second, log.New())
+	p := socks.NewProxy(cfg.Listen, handler, nil, time.Duration(cfg.Timeout)*time.Second, nil)
 
 	log.Infof("starting SOCKS server on %s", cfg.Listen)
 	if err := p.Start(); err != nil {

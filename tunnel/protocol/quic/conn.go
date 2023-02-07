@@ -11,7 +11,8 @@ import (
  * a simple wrapper to make quicgo.Stream compatible with net.Conn
  */
 type Conn struct {
-	s          quicgo.Stream
+	s quicgo.Stream
+	// localAddr  net.Addr
 	remoteAddr net.Addr
 }
 

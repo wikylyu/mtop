@@ -11,6 +11,13 @@ import (
 	"github.com/wikylyu/mtop/tunnel"
 )
 
+type nilLogger struct {
+}
+
+func (l *nilLogger) Printf(format string, v ...interface{}) {
+
+}
+
 func RunHTTPProxy() {
 	var cfg struct {
 		Listen string `json:"listen" yaml:"listen"`
@@ -23,6 +30,7 @@ func RunHTTPProxy() {
 
 	proxy := goproxy.NewProxyHttpServer()
 	proxy.Verbose = log.GetLevel() > log.InfoLevel
+	proxy.Logger = &nilLogger{}
 	proxy.OnRequest().DoFunc(func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 		mc, err := DialURL(req.URL)
 		if err != nil {
@@ -40,13 +48,15 @@ func RunHTTPProxy() {
 			return req, goproxy.NewResponse(req, goproxy.ContentTypeText, http.StatusBadGateway, "")
 		}
 
+		log.Infof("[http] %s %s %s", req.RemoteAddr, req.Method, req.URL.Hostname())
+
 		return req, resp
 	})
 	proxy.OnRequest().HijackConnect(func(req *http.Request, client net.Conn, ctx *goproxy.ProxyCtx) {
 		defer client.Close()
 		mc, err := DialURL(req.URL)
 		if err != nil {
-			log.Warnf("Connect to %s error: %v", req.URL.String(), err)
+			log.Warnf("[http] Connect to %s error: %v", req.URL.String(), err)
 			return
 		}
 		defer mc.Close()
@@ -64,7 +74,9 @@ func RunHTTPProxy() {
 			return
 		}
 
+		log.Infof("[http] Connection established %s - %s", req.RemoteAddr, req.URL.Hostname())
 		tunnel.Transmit(client, mc)
+		log.Infof("[http] Connection closed %s - %s", req.RemoteAddr, req.URL.Hostname())
 	})
 	log.Infof("starting http proxy on %s", cfg.Listen)
 	if err := http.ListenAndServe(cfg.Listen, proxy); err != nil {
