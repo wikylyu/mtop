@@ -227,8 +227,8 @@ github.com/vmihailenco/msgpack/v5 v5.3.5 h1:5gO0H1iULLWGhs2H5tbAHIZTV8/cYafcFOr9
 github.com/vmihailenco/msgpack/v5 v5.3.5/go.mod h1:7xyJ9e+0+9SaZT0Wt1RGleJXzli6Q/V5KbhBonMG9jc=
 github.com/vmihailenco/tagparser/v2 v2.0.0 h1:y09buUbR+b5aycVFQs/g70pqKVZNBmxwAhO7/IwNM9g=
 github.com/vmihailenco/tagparser/v2 v2.0.0/go.mod h1:Wri+At7QHww0WTrCBeu4J6bNtoV6mEfg5OIWRZA9qds=
-github.com/wikylyu/gosocks v0.0.0-20230207022115-fb7de87f2dd2 h1:q1/he3xWNeVSVo4St08x1VRKEvcsmxCn0Q8YU5NX5VA=
-github.com/wikylyu/gosocks v0.0.0-20230207022115-fb7de87f2dd2/go.mod h1:Smi9KiARHRBJciHcrGT6+BahCKOk6LvmzaXr2DkKySs=
+github.com/wikylyu/gosocks v0.0.0-20230208020440-642c8cba5327 h1:b95HzLUB5RXA1SbVsuEBwjABHAQDR2YAWFXym8bAPMk=
+github.com/wikylyu/gosocks v0.0.0-20230208020440-642c8cba5327/go.mod h1:Smi9KiARHRBJciHcrGT6+BahCKOk6LvmzaXr2DkKySs=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

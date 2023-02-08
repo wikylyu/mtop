@@ -18,7 +18,7 @@ type socks5Handler struct {
 	raddr string
 }
 
-func (s *socks5Handler) PreHandler(caddr net.Addr, req socks.Request) (io.ReadWriteCloser, *socks.Error) {
+func (s *socks5Handler) Init(caddr net.Addr, req socks.Request) (io.ReadWriteCloser, *socks.Error) {
 	var addr string
 	if req.AddressType == socks.RequestAddressTypeDomainname {
 		addr = string(req.DestinationAddress)
@@ -36,21 +36,18 @@ func (s *socks5Handler) PreHandler(caddr net.Addr, req socks.Request) (io.ReadWr
 	return mc, nil
 }
 
-func (s *socks5Handler) Refresh(ctx context.Context) {
-}
-
-func (s *socks5Handler) CopyFromRemoteToClient(ctx context.Context, remote io.ReadCloser, client io.WriteCloser) error {
+func (s *socks5Handler) ReadFromRemote(ctx context.Context, remote io.ReadCloser, client io.WriteCloser) error {
 	_, err := io.Copy(client, remote)
 	return err
 }
 
-func (s *socks5Handler) CopyFromClientToRemote(ctx context.Context, client io.ReadCloser, remote io.WriteCloser) error {
+func (s *socks5Handler) ReadFromClient(ctx context.Context, client io.ReadCloser, remote io.WriteCloser) error {
 	_, err := io.Copy(remote, client)
 
 	return err
 }
 
-func (s *socks5Handler) Cleanup() error {
+func (s *socks5Handler) Close() error {
 	log.Infof("[socks] Connection closed %s - %s", s.caddr, s.raddr)
 	return nil
 }

@@ -1,6 +1,7 @@
 package tunnel
 
 import (
+	"io"
 	"net"
 	"time"
 
@@ -74,30 +75,17 @@ func Transmit(c1, c2 net.Conn) {
 	go func() {
 		defer c1.Close() // it's ok to close connection twice
 		defer c2.Close()
-		buf := make([]byte, 4096)
 		for {
-			c1.SetReadDeadline(time.Now().Add(time.Minute * 2)) // 120 seconds for timeout
-			n, err := c1.Read(buf)
-
-			if err != nil || n <= 0 {
-				break
-			}
-
-			if _, err := c2.Write(buf[:n]); err != nil {
+			c1.SetReadDeadline(time.Now().Add(time.Minute)) // 60 seconds for timeout
+			if _, err := io.Copy(c2, c1); err != nil {
 				break
 			}
 		}
 	}()
 
-	buf := make([]byte, 4096)
 	for {
-		c2.SetReadDeadline(time.Now().Add(time.Minute * 2)) // 120 seconds for timeout
-		n, err := c2.Read(buf)
-		if err != nil || n <= 0 {
-			break
-		}
-
-		if _, err := c1.Write(buf[:n]); err != nil {
+		c2.SetReadDeadline(time.Now().Add(time.Minute)) // 60 seconds for timeout
+		if _, err := io.Copy(c1, c2); err != nil {
 			break
 		}
 	}
