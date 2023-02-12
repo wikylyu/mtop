@@ -37,7 +37,7 @@ var cfgFile string
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", fmt.Sprintf("config file (default is %s/etc/mtop/mtop.yaml)", config.PREFIX))
-	rootCmd.AddCommand(versionCmd, cmd.UserCmd)
+	rootCmd.AddCommand(versionCmd, cmd.UserCmd, cmd.ConfigCmd)
 }
 
 func initConfig() {

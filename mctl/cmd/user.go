@@ -15,12 +15,20 @@ var UserCmd = &cobra.Command{
 		cmd.Help()
 	},
 }
-var username, password, salt string
+
+var userAddParams struct {
+	Username string
+	Password string
+	Salt     string
+}
 
 var userAddCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add a new user",
 	Run: func(cmd *cobra.Command, args []string) {
+		username := userAddParams.Username
+		password := userAddParams.Password
+		salt := userAddParams.Salt
 		if username == "" || password == "" {
 			cmd.Usage()
 			return
@@ -40,10 +48,15 @@ var userAddCmd = &cobra.Command{
 	},
 }
 
+var userDelParams struct {
+	Username string
+}
+
 var userDelCmd = &cobra.Command{
 	Use:   "del",
 	Short: "Delete a user",
 	Run: func(cmd *cobra.Command, args []string) {
+		username := userDelParams.Username
 		if username == "" {
 			cmd.Usage()
 			return
@@ -63,12 +76,12 @@ var userDelCmd = &cobra.Command{
 }
 
 func init() {
-	userAddCmd.PersistentFlags().StringVarP(&username, "username", "u", "", "Username")
-	userAddCmd.PersistentFlags().StringVarP(&password, "password", "p", "", "Password")
-	userAddCmd.PersistentFlags().StringVarP(&salt, "salt", "s", "", "Password salt used to encrypt")
+	userAddCmd.PersistentFlags().StringVarP(&userAddParams.Username, "username", "u", "", "Username")
+	userAddCmd.PersistentFlags().StringVarP(&userAddParams.Password, "password", "p", "", "Password")
+	userAddCmd.PersistentFlags().StringVarP(&userAddParams.Salt, "salt", "s", "", "Password salt used to encrypt")
 
 	UserCmd.AddCommand(userAddCmd)
 
-	userDelCmd.PersistentFlags().StringVarP(&username, "username", "u", "", "Username")
+	userDelCmd.PersistentFlags().StringVarP(&userDelParams.Username, "username", "u", "", "Username")
 	UserCmd.AddCommand(userDelCmd)
 }
