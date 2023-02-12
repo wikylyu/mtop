@@ -12,7 +12,7 @@ var UserCmd = &cobra.Command{
 	Short: "User management",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		// Do Stuff Here
+		cmd.Help()
 	},
 }
 var username, password, salt string
