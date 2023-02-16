@@ -101,6 +101,19 @@ func initServerConfig() (string, string, *tls.Config) {
 	}
 }
 
+func handleQUICConn(conn quicgo.Connection) {
+	defer conn.CloseWithError(0, "")
+	for {
+		stream, err := conn.AcceptStream(context.Background())
+		if err != nil {
+			log.Warnf("[QUIC] accept stream error:%v", err)
+			break
+		}
+		t := tunnel.NewTunnel(quic.NewConn(stream, conn.RemoteAddr()))
+		go t.Run()
+	}
+}
+
 func runQUICServer(listen string, config *tls.Config) {
 	listener, err := quicgo.ListenAddr(listen, config, nil)
 	if err != nil {
@@ -115,15 +128,7 @@ func runQUICServer(listen string, config *tls.Config) {
 			log.Errorf("[QUIC] accept error:%v", err)
 			continue
 		}
-		go func() {
-			stream, err := conn.AcceptStream(context.Background())
-			if err != nil {
-				log.Warnf("[QUIC] accept stream error:%v", err)
-				return
-			}
-			t := tunnel.NewTunnel(quic.NewConn(stream, conn.RemoteAddr()))
-			t.Run()
-		}()
+		go handleQUICConn(conn)
 	}
 }
 

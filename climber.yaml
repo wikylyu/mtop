@@ -10,8 +10,8 @@ socks5:
 
 servers:
   - host: "127.0.0.1:4433" # including port
-    username: "test"
     type: "quic" # quic or tls, tls is default.
+    username: "test111"
     password: "123456"
     ca: "./keys/ca.crt" # use custom ca
     proto: "mtop-example"

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net"
+	"sync"
 	"time"
 
 	quicgo "github.com/quic-go/quic-go"
@@ -187,6 +188,29 @@ func DialTLS(ca, server string, username, password string, target string, port u
 	return mc, nil
 }
 
+var quicConns map[string][]quicgo.Connection = make(map[string][]quicgo.Connection)
+var quicMutex sync.Mutex
+
+func getQuicConn(server string) quicgo.Connection {
+	defer quicMutex.Unlock()
+	quicMutex.Lock()
+	conns := quicConns[server]
+	if len(conns) > 0 {
+		conn := conns[0]
+		quicConns[server] = conns[1:]
+		return conn
+	}
+	return nil
+}
+
+func setQuicConn(server string, conn quicgo.Connection) {
+	defer quicMutex.Unlock()
+	quicMutex.Lock()
+	conns := quicConns[server]
+	conns = append(conns, conn)
+	quicConns[server] = conns
+}
+
 func DialQUIC(ca, server string, username, password string, target string, port uint16, proto string) (*MTopClientConn, error) {
 	addr := parseMTopAddressFromHost(target, port)
 
@@ -194,19 +218,39 @@ func DialQUIC(ca, server string, username, password string, target string, port 
 	if err != nil {
 		return nil, err
 	}
-	conn, err := quicgo.DialAddr(server, tlsConf, nil)
+	var stream quicgo.Stream = nil
+	var mc *MTopClientConn = nil
+
+	conn := getQuicConn(server)
+	if conn != nil {
+		stream, _ = conn.OpenStreamSync(context.Background())
+		if stream != nil {
+			mc = NewMTopClientConn(quic.NewConn(stream, conn.RemoteAddr()), username, password, addr)
+			if err := mc.Connect(); err == nil {
+				setQuicConn(server, conn)
+				return mc, nil
+			}
+		}
+	}
+
+	conn, err = quicgo.DialAddr(server, tlsConf, &quicgo.Config{
+		HandshakeIdleTimeout: time.Second * 5,
+		MaxIdleTimeout:       time.Second * 10,
+	})
+
 	if err != nil {
 		return nil, err
 	}
 
-	stream, err := conn.OpenStreamSync(context.Background())
+	stream, err = conn.OpenStreamSync(context.Background())
 	if err != nil {
 		return nil, err
 	}
 
-	mc := NewMTopClientConn(quic.NewConn(stream, conn.RemoteAddr()), username, password, addr)
+	mc = NewMTopClientConn(quic.NewConn(stream, conn.RemoteAddr()), username, password, addr)
 	if err := mc.Connect(); err != nil {
 		return nil, err
 	}
+	setQuicConn(server, conn)
 	return mc, nil
 }
