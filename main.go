@@ -106,7 +106,7 @@ func handleQUICConn(conn quicgo.Connection) {
 	for {
 		stream, err := conn.AcceptStream(context.Background())
 		if err != nil {
-			log.Warnf("[QUIC] accept stream error:%v", err)
+			log.Debugf("[QUIC] accept stream error:%v", err)
 			break
 		}
 		t := tunnel.NewTunnel(quic.NewConn(stream, conn.RemoteAddr()))
