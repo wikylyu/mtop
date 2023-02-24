@@ -11,14 +11,13 @@ MTop follows the principle -- `do one thing and do it well`.
 MTop is just a network proxy for data forwarding. It provides below features:
 
 * User auth with username/password
-* Transport protocol is configurable. By default, it's TLS1.3, and [QUIC](https://en.wikipedia.org/wiki/QUIC) is supported. More transport protocol may be supported in the future, but they must be a security protocol.
+* Transport protocol is configurable. By default, it's TLS1.3, and [QUIC](https://en.wikipedia.org/wiki/QUIC) is supported. More transport protocol may be supported in the future, but they must be a security one.
 * Custom CA. Allowed to use self signed certificate.
 * MySQL and PostgreSQL integration for user management, which means you can just insert/update database to manage large scale of users programmatically, without modifying config file.
 
 MTop doesn't and also will not provide below features:
 
 * GeoIP detection and forwarding based on IP or domain.
-* TCP Multiplexing. It should be implemented by application protocol, like HTTP/2.
 * Complex encryption. MTop's safety depends on transport protocol.
 * UDP forwarding.
 
