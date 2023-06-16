@@ -138,9 +138,12 @@ func (mc *MTopClientConn) SetWriteDeadline(t time.Time) error {
 	return mc.c.SetWriteDeadline(t)
 }
 
-func getTLSConfig(ca, proto string) (*tls.Config, error) {
+func getTLSConfig(host, ca, proto string) (*tls.Config, error) {
+	serverName, _, _ := net.SplitHostPort(host)
 	tlsConf := &tls.Config{
-		NextProtos: []string{proto},
+		NextProtos:         []string{proto},
+		InsecureSkipVerify: false,
+		ServerName:         serverName,
 	}
 	if ca != "" {
 		certPool := x509.NewCertPool()
@@ -172,7 +175,7 @@ func parseMTopAddressFromHost(target string, port uint16) *MTopAddress {
 func DialTLS(ca, server string, username, password string, target string, port uint16, proto string) (*MTopClientConn, error) {
 	addr := parseMTopAddressFromHost(target, port)
 
-	tlsConf, err := getTLSConfig(ca, proto)
+	tlsConf, err := getTLSConfig(server, ca, proto)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +217,7 @@ func setQuicConn(server string, conn quicgo.Connection) {
 func DialQUIC(ca, server string, username, password string, target string, port uint16, proto string) (*MTopClientConn, error) {
 	addr := parseMTopAddressFromHost(target, port)
 
-	tlsConf, err := getTLSConfig(ca, proto)
+	tlsConf, err := getTLSConfig(server, ca, proto)
 	if err != nil {
 		return nil, err
 	}
@@ -233,7 +236,7 @@ func DialQUIC(ca, server string, username, password string, target string, port 
 		}
 	}
 
-	conn, err = quicgo.DialAddr(server, tlsConf, &quicgo.Config{
+	conn, err = quicgo.DialAddr(context.Background(), server, tlsConf, &quicgo.Config{
 		HandshakeIdleTimeout: time.Second * 5,
 		MaxIdleTimeout:       time.Second * 10,
 	})
