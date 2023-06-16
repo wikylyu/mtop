@@ -22,14 +22,14 @@ mctl:
 dist: mtop climber mctl
 	tar -C bin/ -jcvf dist/mtop_linux64.tar.bz2 .
 
-install-mtop: mtop mctl
+install-mtop:
 	mkdir -p $(PREFIX)/bin/
 	mkdir -p $(PREFIX)/etc/mtop/
 	install bin/mtop $(PREFIX)/bin/
 	install bin/mctl $(PREFIX)/bin/
 	cp -n script/mtop.yaml $(PREFIX)/etc/mtop/
 
-install-climber: climber
+install-climber: 
 	mkdir -p $(PREFIX)/bin/
 	mkdir -p $(PREFIX)/etc/climber/
 	install bin/climber $(PREFIX)/bin/

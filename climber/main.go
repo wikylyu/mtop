@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 
@@ -53,5 +55,8 @@ func initClimber() {
 }
 
 func main() {
+	go func() {
+		http.ListenAndServe("127.0.0.1:1616", nil)
+	}()
 	rootCmd.Execute()
 }

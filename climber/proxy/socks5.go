@@ -37,14 +37,33 @@ func (s *socks5Handler) Init(caddr net.Addr, req socks.Request) (io.ReadWriteClo
 }
 
 func (s *socks5Handler) ReadFromRemote(ctx context.Context, remote io.ReadCloser, client io.WriteCloser) error {
-	_, err := io.Copy(client, remote)
-	return err
+	buf := make([]byte, 4096)
+	n, err := remote.Read(buf)
+	if err != nil {
+		return err
+	} else if n <= 0 {
+		return io.EOF
+	}
+	if _, err := client.Write(buf[:n]); err != nil {
+		return err
+	}
+	// _, err := io.Copy(client, remote)
+	return nil
 }
 
 func (s *socks5Handler) ReadFromClient(ctx context.Context, client io.ReadCloser, remote io.WriteCloser) error {
-	_, err := io.Copy(remote, client)
-
-	return err
+	buf := make([]byte, 4096)
+	n, err := client.Read(buf)
+	if err != nil {
+		return err
+	} else if n <= 0 {
+		return io.EOF
+	}
+	if _, err := remote.Write(buf[:n]); err != nil {
+		return err
+	}
+	// _, err := io.Copy(remote, client)
+	return nil
 }
 
 func (s *socks5Handler) Close() error {
