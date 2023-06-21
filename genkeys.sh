@@ -6,8 +6,7 @@
 # modify IP:127.0.0.1 to your domain, such as DNS:example.com.
 # 
 
-echo "Input your server domain, IP:111.111.111.11 or DNS:example.com"
-read domain
+read -p "Enter your server domain or ip (IP:111.111.111.11 or DNS:example.com): " domain
 
 mkdir -p keys
 

@@ -47,7 +47,6 @@ func (s *socks5Handler) ReadFromRemote(ctx context.Context, remote io.ReadCloser
 	if _, err := client.Write(buf[:n]); err != nil {
 		return err
 	}
-	// _, err := io.Copy(client, remote)
 	return nil
 }
 
@@ -62,7 +61,6 @@ func (s *socks5Handler) ReadFromClient(ctx context.Context, client io.ReadCloser
 	if _, err := remote.Write(buf[:n]); err != nil {
 		return err
 	}
-	// _, err := io.Copy(remote, client)
 	return nil
 }
 

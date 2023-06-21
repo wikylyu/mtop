@@ -84,9 +84,6 @@ func Transmit(c1, c2 net.Conn) {
 			if _, err := c2.Write(buf[:n]); err != nil {
 				break
 			}
-			// if _, err := io.Copy(c2, c1); err != nil {
-			// 	break
-			// }
 		}
 	}()
 
@@ -100,8 +97,5 @@ func Transmit(c1, c2 net.Conn) {
 		if _, err := c1.Write(buf[:n]); err != nil {
 			break
 		}
-		// if _, err := io.Copy(c1, c2); err != nil {
-		// 	break
-		// }
 	}
 }
