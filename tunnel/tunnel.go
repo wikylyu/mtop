@@ -46,7 +46,7 @@ func (t *Tunnel) Run() {
 			log.Debugf("User %s not found", username)
 			return false
 		} else if !user.Auth(password) {
-			log.Debugf("User %s password incorrect: %s", password)
+			log.Debugf("User %s password incorrect: %s", username, password)
 			return false
 		}
 
