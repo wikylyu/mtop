@@ -9,7 +9,9 @@ import (
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/mysqldialect"
 	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/dialect/sqlitedialect"
 	"github.com/uptrace/bun/driver/pgdriver"
+	"github.com/uptrace/bun/driver/sqliteshim"
 	"github.com/uptrace/bun/extra/bundebug"
 )
 
@@ -27,6 +29,13 @@ func ConnectToDatabase(driverName string, dsn string) (*bun.DB, error) {
 		}
 
 		return bun.NewDB(sqldb, mysqldialect.New()), nil
+	} else if driverName == "sqlite" {
+		sqldb, err := sql.Open(sqliteshim.ShimName, dsn)
+		if err != nil {
+			return nil, err
+		}
+
+		return bun.NewDB(sqldb, sqlitedialect.New()), nil
 	}
 	return nil, fmt.Errorf("Unsupported database %s", driverName)
 }
