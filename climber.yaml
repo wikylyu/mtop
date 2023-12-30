@@ -2,10 +2,10 @@ log:
   level: "debug"
 
 http:
-  listen: :10811
+  listen: :1081
 
 socks5:
-  listen: :10801
+  listen: :1080
   timeout: 60
 
 servers:
