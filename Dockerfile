@@ -6,7 +6,7 @@ COPY ./keys ./keys
 COPY ./climber.yaml .
 COPY ./mtop.yaml .
 
-EXPOSE 10811
-EXPOSE 10801
+EXPOSE 1081
+EXPOSE 1080
 
 CMD ["./bin/climber"]
